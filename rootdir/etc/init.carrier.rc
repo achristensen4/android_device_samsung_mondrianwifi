@@ -12,7 +12,7 @@ on boot
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/state
     chown bluetooth net_bt_stack /sys/class/rfkill/rfkill0/type
 
-    write /proc/sys/vm/swappiness 130
+    write /proc/sys/vm/swappiness 60
 
 on fs
 
@@ -25,7 +25,7 @@ on fs
      mkdir /persdata/absolute 0750 system system 
   
      wait /dev/block/platform/msm_sdcc.1/by-name/persdata 
-     check_fs /dev/block/platform/msm_sdcc.1/by-name/persdata ext4 
+     check_fs /dev/block/platform/msm_sdcc.1/by-name/persdata ext4  nosuid nodev barrier=1
      mount ext4 /dev/block/platform/msm_sdcc.1/by-name/persdata /persdata/absolute nosuid nodev barrier=1 
       
      chown system system /persdata 
@@ -35,7 +35,7 @@ on fs
 
 # AT Distributor for factory test
 service at_distributor /system/bin/at_distributor
-    class late_start
+    class main
     user root
     group radio misc loggroup radio misc log
 
@@ -54,7 +54,6 @@ write /sys/bus/msm_subsys/devices/subsys2/restart_level "related"
 service scranton_RD /system/bin/scranton_RD
     class main
     user root
-    disabled
     oneshot
 
 # start for TZPR provisioning version check app
@@ -76,22 +75,19 @@ service swapon /sbin/sswap -s
 service ftm_ptt /system/bin/ftm_ptt -d
     user root
     group radio system
-    disabled
 
 # for ethernet
 service dhcpcd_eth0 /system/bin/dhcpcd -ABKL
     class main
-    disabled
     oneshot
 
 # umount service
 service umount_service /system/bin/umount /preload
-    disabled
     oneshot
     
 # Support Preload install apks
 on property:persist.sys.storage_preload=1
-    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/hidden /preload nosuid nodev ro barrier=1
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/hidden /preload nosuid nodev rw barrier=1
     setprop storage.preload.complete 1
 
 on property:persist.sys.storage_preload=0
